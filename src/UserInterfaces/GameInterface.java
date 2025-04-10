@@ -8,6 +8,7 @@ import MapObjects.LandscapeObject;
 import MapObjects.PassiveMapObject;
 import BattleObjects.Battle;
 import com.company.QuasiConsole;
+import com.company.WebClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ public class GameInterface implements Runnable{
     private KeyboardAdapter keyboard;
     private InputInfo inputInfo;
 
-    private int active;
+    private volatile int active;
     private Battle battle;
     private int battlePosition;
 
@@ -46,6 +47,7 @@ public class GameInterface implements Runnable{
     }
 
     public void reset(JSONObject json) {
+        this.currentPlayer = json.getInt("currentPlayer");
         this.playField = new PlayField(json, user, enemyUser);
 
         JSONArray zeroHeroes = json.getJSONArray("players").getJSONObject(0).getJSONArray("armies");
@@ -92,6 +94,7 @@ public class GameInterface implements Runnable{
         if (this.inputInfo.isShiftE()) {
             this.day = (this.user.getNumber() == 1) ? this.day+1 : this.day;
             this.currentPlayer = (this.user.getNumber() == 1) ? 0 : 1;
+            WebClient.post(this.toJSON().toString());
         }
 
         if (this.inputInfo.isE()) this.active = 3;
@@ -338,7 +341,7 @@ public class GameInterface implements Runnable{
                                 + this.user.getHeroByNumber(this.currentHero).getStamina());
                         System.out.println("Your force: " + this.user.getHeroByNumber(this.currentHero).getArmy().getForce());
                         System.out.println("Your money: " + this.user.getMoney());
-                        System.out.println(this.isActive());
+                        System.out.println(this.isActive() + " " + this.currentPlayer);
                     } catch (IndexOutOfBoundsException e){ }
                     break;
                 case (2):
@@ -368,7 +371,7 @@ public class GameInterface implements Runnable{
                     break;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
